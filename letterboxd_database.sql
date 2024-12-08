@@ -6,7 +6,7 @@ CREATE TABLE movies
  movie_name			varchar(100),
  movie_date			year,
  tagline			varchar(200) DEFAULT NULL,
- movie_description	varchar(200) DEFAULT NULL,
+ movie_description	varchar(500) DEFAULT NULL,
  movie_length		int,
  movie_rating		double,
  primary key (id));
