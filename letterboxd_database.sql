@@ -4,7 +4,7 @@ USE letterboxd;
 CREATE TABLE movies
 (id					int,
  movie_name			varchar(100),
- movie_date			int,
+ movie_date			year,
  tagline			varchar(200) DEFAULT NULL,
  movie_description	varchar(200) DEFAULT NULL,
  movie_length		int,
@@ -42,14 +42,6 @@ CREATE TABLE languages
 CREATE TABLE posters
 (id		int,
  link	text,
- foreign key (id) references movies (id));
- 
-CREATE TABLE releases
-(id				int,
- country		varchar(50),
- release_date	date,
- release_type	varchar(50),
- age_rating		varchar(5),
  foreign key (id) references movies (id));
  
 CREATE TABLE studios
