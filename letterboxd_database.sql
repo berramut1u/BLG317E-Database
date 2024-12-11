@@ -35,7 +35,6 @@ CREATE TABLE genres
  
 CREATE TABLE languages
 (id				int,
- language_type	varchar(50),
  film_language	varchar(50),
  foreign key (id) references movies (id));
  
