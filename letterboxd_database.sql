@@ -14,7 +14,7 @@ CREATE TABLE movies
 CREATE TABLE actors
 (id			int,
  actor_name	varchar(100),
- actor_role	varchar(100) DEFAULT NULL,
+ actor_role	varchar(500) DEFAULT NULL,
  foreign key (id) references movies (id));
  
 CREATE TABLE countries
