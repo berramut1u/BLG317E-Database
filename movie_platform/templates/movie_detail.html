@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">MovieSite</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/movies">All Movies</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{{ movies.poster_url }}" class="img-fluid" alt="{{ movies.movie_name }} Poster">
+            </div>
+            <div class="col-md-8">
+                <h1>{{ movies.movie_name }}</h1>
+                <p><strong>Description:</strong> {{ movies.movie_description }}</p>
+                <p><strong>Director:</strong> {{ movies.director }}</p>
+                <p><strong>Release Year:</strong> {{ movies.movie_date }}</p>
+                <p><strong>Runtime:</strong> {{ movies.movie_length }} minutes</p>
+                <p><strong>Genre:</strong> {{ movies.genre }}</p>
+                <p><strong>Rating:</strong> {{ movies.movie_rating }}</p>
+            </div>
+            </div>
+            <!-- Actors Section -->
+        <section class="my-5">
+            <h2>Actors</h2>
+            <ul class="list-group">
+                {% for actor in actors %}
+                    <li class="list-group-item">
+                        <strong>{{ actor.actor_name }}</strong>: {{ actor.actor_role }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+
+
+
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container">
+            <p>&copy; 2024 MovieSite. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
