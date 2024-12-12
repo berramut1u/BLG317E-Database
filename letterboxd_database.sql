@@ -6,7 +6,7 @@ CREATE TABLE movies
  movie_name			varchar(100),
  movie_date			year,
  tagline			varchar(200) DEFAULT NULL,
- movie_description	varchar(500) DEFAULT NULL,
+ movie_description	varchar(1000) DEFAULT NULL,
  movie_length		int,
  movie_rating		double,
  primary key (id));
@@ -51,4 +51,8 @@ CREATE TABLE studios
 CREATE TABLE themes
 (id		int,
  theme	varchar(200),
- foreign key (id) references movies (id))
+ foreign key (id) references movies (id));
+ 
+CREATE TABLE login
+(username	varchar(10),
+ pass		varchar(10))
