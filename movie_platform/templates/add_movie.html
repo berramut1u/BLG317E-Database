@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Movie</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .actor-row, .crew-row {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .actor-row input, .crew-row input {
+            flex: 1;
+        }
+        button[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button[type="button"]:hover {
+            background-color: #45a049;
+        }
+        button[type="submit"] {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Add a New Movie</h1>
+    <form method="POST">
+        <label for="id">Movie ID:</label>
+        <input type="text" id="id" name="id" required><br><br>
+
+        <label for="movie_name">Movie Name:</label>
+        <input type="text" id="movie_name" name="movie_name" required><br><br>
+
+        <label for="movie_date">Movie Date:</label>
+        <input type="text" id="movie_date" name="movie_date" required><br><br>
+
+        <label for="tagline">Tagline:</label>
+        <input type="text" id="tagline" name="tagline"><br><br>
+
+        <label for="movie_description">Description:</label>
+        <textarea id="movie_description" name="movie_description"></textarea><br><br>
+
+        <label for="movie_length">Movie Length (minutes):</label>
+        <input type="number" id="movie_length" name="movie_length" required><br><br>
+
+        <label for="movie_rating">Movie Rating:</label>
+        <input type="number" step="0.1" id="movie_rating" name="movie_rating" required><br><br>
+
+        <!-- Actors Section -->
+        <label>Actors (Name and Role):</label>
+        <div id="actors-container">
+            <div class="actor-row">
+                <input type="text" name="actor_name[]" placeholder="Actor Name" required>
+                <input type="text" name="actor_role[]" placeholder="Actor Role" required>
+            </div>
+        </div>
+        <button type="button" onclick="addActor()">Add New Actor</button><br><br>
+
+        <!-- Crew Section -->
+        <label>Crew (Name and Role):</label>
+        <div id="crew-container">
+            <div class="crew-row">
+                <input type="text" name="crew_name[]" placeholder="Crew Name" required>
+                <input type="text" name="crew_role[]" placeholder="Crew Role" required>
+            </div>
+        </div>
+        <button type="button" onclick="addCrew()">Add New Crew</button><br><br>
+
+        <!-- Countries -->
+        <label for="countries">Countries (comma-separated):</label>
+        <input type="text" id="countries" name="countries"><br><br>
+
+        <!-- Genres -->
+        <label for="genres">Genres (comma-separated):</label>
+        <input type="text" id="genres" name="genres"><br><br>
+
+        <!-- Languages -->
+        <label for="languages">Languages (comma-separated):</label>
+        <input type="text" id="languages" name="languages"><br><br>
+
+        <!-- Themes -->
+        <label for="themes">Themes (comma-separated):</label>
+        <input type="text" id="themes" name="themes"><br><br>
+
+        <!-- Studio -->
+        <label for="studio">Studio:</label>
+        <input type="text" id="studio" name="studio"><br><br>
+
+        <!-- Poster Link -->
+        <label for="poster_link">Poster Link:</label>
+        <input type="url" id="poster_link" name="poster_link"><br><br>
+
+        <button type="submit">Add Movie</button>
+    </form>
+
+    <script>
+        function addActor() {
+            var container = document.getElementById('actors-container');
+            var newActorRow = document.createElement('div');
+            newActorRow.classList.add('actor-row');
+
+            var actorNameInput = document.createElement('input');
+            actorNameInput.type = 'text';
+            actorNameInput.name = 'actor_name[]';
+            actorNameInput.placeholder = 'Actor Name';
+            actorNameInput.required = true;
+
+            var actorRoleInput = document.createElement('input');
+            actorRoleInput.type = 'text';
+            actorRoleInput.name = 'actor_role[]';
+            actorRoleInput.placeholder = 'Actor Role';
+            actorRoleInput.required = true;
+
+            newActorRow.appendChild(actorNameInput);
+            newActorRow.appendChild(actorRoleInput);
+            container.appendChild(newActorRow);
+        }
+
+        function addCrew() {
+            var container = document.getElementById('crew-container');
+            var newCrewRow = document.createElement('div');
+            newCrewRow.classList.add('crew-row');
+
+            var crewNameInput = document.createElement('input');
+            crewNameInput.type = 'text';
+            crewNameInput.name = 'crew_name[]';
+            crewNameInput.placeholder = 'Crew Name';
+            crewNameInput.required = true;
+
+            var crewRoleInput = document.createElement('input');
+            crewRoleInput.type = 'text';
+            crewRoleInput.name = 'crew_role[]';
+            crewRoleInput.placeholder = 'Crew Role';
+            crewRoleInput.required = true;
+
+            newCrewRow.appendChild(crewNameInput);
+            newCrewRow.appendChild(crewRoleInput);
+            container.appendChild(newCrewRow);
+        }
+    </script>
+</body>
+</html>

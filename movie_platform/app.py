@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from db_config import get_db_connection
 
 app = Flask(__name__)
@@ -156,7 +156,153 @@ def filter_movies():
     return render_template('movie_list.html', movies=movies)
 
 
+@app.route('/add_movie', methods=['GET', 'POST'])
+def add_movie():
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
+    if request.method == 'POST':
+        movie_id = request.form['id']
+        movie_name = request.form['movie_name']
+        movie_date = request.form['movie_date']
+        tagline = request.form['tagline']
+        description = request.form['movie_description']
+        movie_length = request.form['movie_length']
+        movie_rating = request.form['movie_rating']
+
+        actor_names = request.form.getlist('actor_name[]')
+        actor_roles = request.form.getlist('actor_role[]')
+
+        crew_names = request.form.getlist('crew_name[]')
+        crew_roles = request.form.getlist('crew_role[]') 
+
+        countries = request.form.get('countries', '').split(',')   
+        genres = request.form.get('genres', '').split(',') 
+        languages = request.form.get('languages', '').split(',')  
+        themes = request.form.get('themes', '').split(',') 
+        studio = request.form['studio']
+        poster_link = request.form['poster_link']
+
+        cursor.execute("""
+            INSERT INTO movies (id, movie_name, movie_date, tagline, movie_description, movie_length, movie_rating)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) 
+        """, (movie_id, movie_name, movie_date, tagline, description, movie_length, movie_rating))
+        
+
+        for actor_name, actor_role in zip(actor_names, actor_roles):
+            cursor.execute("INSERT INTO actors (id, actor_name, actor_role) VALUES (%s, %s, %s)", 
+                           (movie_id, actor_name, actor_role))
+        for country in countries:
+            if country.strip():
+                cursor.execute("INSERT INTO countries (id, country) VALUES (%s, %s)", (movie_id, country.strip()))
+
+        for crew_name, crew_role in zip(crew_names, crew_roles):
+            cursor.execute("INSERT INTO crew (id, crew_role, crew_name) VALUES (%s, %s, %s)",
+                           (movie_id, crew_role, crew_name))
+
+        for genre in genres:
+            if genre.strip():
+                cursor.execute("INSERT INTO genres (id, genre) VALUES (%s, %s)", (movie_id, genre.strip()))
+
+        for language in languages:
+            if language.strip():
+                cursor.execute("INSERT INTO languages (id, film_language) VALUES (%s, %s)", (movie_id, language.strip()))
+
+        for theme in themes:
+            if theme.strip():
+                cursor.execute("INSERT INTO themes (id, theme) VALUES (%s, %s)", (movie_id, theme.strip()))
+
+        if studio.strip():
+            cursor.execute("INSERT INTO studios (id, studio) VALUES (%s, %s)", (movie_id, studio.strip()))
+
+        if poster_link.strip():
+            cursor.execute("INSERT INTO posters (id, link) VALUES (%s, %s)", (movie_id, poster_link.strip()))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect('/movies')
+
+    return render_template('add_movie.html')
+
+
+
+@app.route('/update_movie/<int:movie_id>', methods=['GET', 'POST'])
+def update_movie(movie_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM movies WHERE id = %s", (movie_id,))
+    existing_movie = cursor.fetchone()
+
+    if existing_movie is None:
+        return "Movie not found!", 404  
+
+    if request.method == 'POST':
+        movie_name = request.form.get('movie_name', existing_movie[1])  
+        movie_date = request.form.get('movie_date', existing_movie[2]) 
+        tagline = request.form.get('tagline', existing_movie[3])  
+        description = request.form.get('movie_description', existing_movie[4]) 
+        movie_length = request.form.get('movie_length', existing_movie[5]) 
+        movie_rating = request.form.get('movie_rating', existing_movie[6]) 
+
+        cursor.execute("""
+            UPDATE movies
+            SET movie_name = %s, movie_date = %s, tagline = %s, movie_description = %s,
+                movie_length = %s, movie_rating = %s
+            WHERE id = %s
+        """, (
+            movie_name,
+            movie_date,
+            tagline,
+            description,
+            movie_length,
+            movie_rating,
+            movie_id
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect('/movies')
+
+    else:
+        
+        cursor.execute("SELECT * FROM movies WHERE id = %s", (movie_id,))
+        movie = cursor.fetchone()
+        conn.close()
+
+        if movie is None:
+            return "Movie not found", 404 
+
+        return render_template('update_movie.html', movie=movie)
+
+
+@app.route('/delete_movie/<int:movie_id>', methods=['POST'])
+def delete_movie(movie_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+
+    cursor.execute("DELETE FROM actors WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM countries WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM crew WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM genres WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM languages WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM themes WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM studios WHERE id = %s", (movie_id,))
+    cursor.execute("DELETE FROM posters WHERE id = %s", (movie_id,))
+
+    cursor.execute("DELETE FROM movies WHERE id = %s", (movie_id,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect('/movies')
 
 
 @app.route('/movie/<int:id>', methods=['GET'])
