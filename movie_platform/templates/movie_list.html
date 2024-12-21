@@ -6,10 +6,26 @@
     <title>All Movies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
+        /* Bubble styling for filter section */
+        .filter-bubble {
+            background: #f0f8ff; /* Light background color for the bubble */
+            border-radius: 25px; /* Rounded corners for the bubble effect */
+            padding: 30px; /* Space inside the bubble */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            margin-top: 20px; /* Space from the top */
+            margin-bottom: 40px; /* Space from the bottom */
+        }
+
+        /* Styling for each filter form element */
+        .filter-bubble .form-label {
+            font-weight: bold; /* Make labels bold */
+        }
+
         .range-slider {
             position: relative;
             width: 100%;
         }
+
         .range-slider input[type="range"] {
             position: absolute;
             pointer-events: none;
@@ -19,6 +35,7 @@
             height: 5px;
             background: transparent;
         }
+
         .range-slider input[type="range"]::-webkit-slider-thumb {
             pointer-events: all;
             position: relative;
@@ -30,6 +47,7 @@
             border-radius: 50%;
             background: #007bff;
         }
+
         .range-slider .track {
             position: absolute;
             height: 5px;
@@ -38,12 +56,17 @@
             width: 100%;
             z-index: 0;
         }
+
         .range-slider .range {
             position: absolute;
             height: 5px;
             background: #007bff;
             border-radius: 5px;
             z-index: 1;
+        }
+
+        .filter-bubble .form-select, .filter-bubble .range-slider {
+            margin-bottom: 15px; /* Space between form elements */
         }
     </style>
 </head>
@@ -71,25 +94,18 @@
         </div>
     </header>
 
-    <section class="container my-4">
-        <form class="row g-3" action="/filter" method="get">
-            <!-- Genre Filter -->
+    <!-- Filter Bubble Section -->
+    <section class="container">
+        <div class="filter-bubble">
+            <form class="row g-3" action="/filter" method="get">
+                <!-- Genre Filter -->
             <div class="col-12">
                 <label for="genre" class="form-label">Genre</label>
                 <select name="genre" id="genre" class="form-select">
                     <option value="">All</option>
-                    <option value="Adventure">Adventure</option>
-                    <option value="Thriller">Thriller</option>
-                    <option value="Comedy">Comedy</option>
-                    <option value="Drama">Drama</option>
-                    <option value="Science Fiction">Science Fiction</option>
-                    <option value="Action">Action</option>
-                    <option value="Music">Music</option>
-                    <option value="Romance">Romance</option>
-                    <option value="History">History</option>
-                    <option value="Crime">Crime</option>
-                    <option value="Fantasy">Fantasy</option>
-                    <option value="Animation">Animation</option>
+                    {% for genre_item in genres %}
+                        <option value="{{ genre_item['genre'] }}" {% if genre_item['genre'] == selected_genre %}selected{% endif %}>{{ genre_item['genre'] }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -98,75 +114,65 @@
                 <label for="language" class="form-label">Language</label>
                 <select name="language" id="language" class="form-select">
                     <option value="">All</option>
-                    <option value="English">English</option>
-                    <option value="Korean">Korean</option>
-                    <option value="Japanese">Japanese</option>
-                    <option value="French">French</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="German">German</option>
-                    <option value="Norwegian">Norwegian</option>
-                    <option value="Cantonese">Cantonese</option>
-                    <option value="Chinese">Chinese</option>
-                    <option value="Portuguese">Portuguese</option>
-                    <option value="Danish">Danish</option>
-                    <option value="Italian">Italian</option>
-                    <option value="Swedish">Swedish</option>
-                    <option value="Russian">Russian</option>
-                    <option value="Greek (modern)">Greek (modern)</option>
-                    <option value="Telugu">Telugu</option>
+                    {% for language_item in languages %}
+                        <option value="{{ language_item['film_language'] }}" {% if language_item['film_language'] == selected_language %}selected{% endif %}>{{ language_item['film_language'] }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            
-            <!-- Release Year Range Filter -->
-            <div class="col-12">
-                <label for="year_range" class="form-label">Release Year</label>
-                <div class="range-slider">
-                    <div class="track"></div>
-                    <div class="range" id="yearRange"></div>
-                    <input type="range" id="yearMin" name="year_min" min="1950" max="2023" value="1900">
-                    <input type="range" id="yearMax" name="year_max" min="1950" max="2023" value="2023">
-                </div>
-                <div class="d-flex justify-content-between">
-                    <span id="yearMinLabel">1950</span>
-                    <span id="yearMaxLabel">2023</span>
-                </div>
-            </div>
-            
-            <!-- Runtime Range Filter -->
-            <div class="col-12">
-                <label for="runtime_range" class="form-label">Runtime (minutes)</label>
-                <div class="range-slider">
-                    <div class="track"></div>
-                    <div class="range" id="runtimeRange"></div>
-                    <input type="range" id="runtimeMin" name="runtime_min" min="78" max="351" value="78">
-                    <input type="range" id="runtimeMax" name="runtime_max" min="78" max="351" value="351">
-                </div>
-                <div class="d-flex justify-content-between">
-                    <span id="runtimeMinLabel">78</span>
-                    <span id="runtimeMaxLabel">351</span>
-                </div>
-            </div>
 
-            <!-- Rating Range Filter -->
-            <div class="col-12">
-                <label for="rating_range" class="form-label">Rating</label>
-                <div class="range-slider">
-                    <div class="track"></div>
-                    <div class="range" id="ratingRange"></div>
-                    <input type="range" id="ratingMin" name="rating_min" min="0.0" max="5.0" step="0.1" value="0.0">
-                    <input type="range" id="ratingMax" name="rating_max" min="0.0" max="5.0" step="0.1" value="5.0">
+
+                
+                <!-- Release Year Range Filter -->
+                <div class="col-12">
+                    <label for="year_range" class="form-label">Release Year</label>
+                    <div class="range-slider">
+                        <div class="track"></div>
+                        <div class="range" id="yearRange"></div>
+                        <input type="range" id="yearMin" name="year_min" min="1950" max="2023" value="1950">
+                        <input type="range" id="yearMax" name="year_max" min="1950" max="2023" value="2023">
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span id="yearMinLabel">1950</span>
+                        <span id="yearMaxLabel">2023</span>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span id="ratingMinLabel">0.0</span>
-                    <span id="ratingMaxLabel">5.0</span>
+                
+                <!-- Runtime Range Filter -->
+                <div class="col-12">
+                    <label for="runtime_range" class="form-label">Runtime (minutes)</label>
+                    <div class="range-slider">
+                        <div class="track"></div>
+                        <div class="range" id="runtimeRange"></div>
+                        <input type="range" id="runtimeMin" name="runtime_min" min="78" max="351" value="78">
+                        <input type="range" id="runtimeMax" name="runtime_max" min="78" max="351" value="351">
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span id="runtimeMinLabel">78</span>
+                        <span id="runtimeMaxLabel">351</span>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Submit Button -->
-            <div class="col-12 text-center">
-                <button type="submit" class="btn btn-primary">Filter</button>
-            </div>
-        </form>
+
+                <!-- Rating Range Filter -->
+                <div class="col-12">
+                    <label for="rating_range" class="form-label">Rating</label>
+                    <div class="range-slider">
+                        <div class="track"></div>
+                        <div class="range" id="ratingRange"></div>
+                        <input type="range" id="ratingMin" name="rating_min" min="0.0" max="5.0" step="0.1" value="0.0">
+                        <input type="range" id="ratingMax" name="rating_max" min="0.0" max="5.0" step="0.1" value="5.0">
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span id="ratingMinLabel">0.0</span>
+                        <span id="ratingMaxLabel">5.0</span>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </form>
+        </div>
     </section>
 
     <main class="container my-4">
@@ -193,8 +199,6 @@
                         <p><strong>Runtime:</strong> {{ movie.movie_length }} mins</p>
                         <p><strong>Language:</strong> {{ movie.languages }}</p>
                         <p><strong>Year:</strong> {{ movie.movie_date }}</p>
-
-
                         <div class="d-flex justify-content-start mt-3">
                             <a href="{{ url_for('movie_details', id=movie.id) }}" class="btn btn-primary me-2">View Details</a>
                             <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning me-2">Update</a>
@@ -202,7 +206,6 @@
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
-
                     </div>
                 </div>
             </div>

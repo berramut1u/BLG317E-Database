@@ -3,8 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Details</title>
+    <title>{{ movie.movie_name }} - Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        .movie-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 100%; /* Ensures the bubble matches the height of the poster */
+        }
+
+        .movie-poster-container {
+            display: flex;
+            justify-content: center; /* Center the poster horizontally */
+            align-items: center; /* Align poster vertically */
+        }
+
+        .movie-poster {
+            max-width: 100%; /* Ensure it doesn't overflow the column */
+            height: auto; /* Maintain aspect ratio */
+            max-height: 400px; /* Limit height for better alignment */
+            object-fit: cover; /* Keep proportions and crop if necessary */
+            border-radius: 10px; /* Match the rounded corners of the bubble */
+        }
+
+        .list-group-item {
+            border: none;
+        }
+
+        .actor-card, .crew-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -24,34 +62,60 @@
     </nav>
 
     <main class="container my-5">
-        <div class="row">
-            <div class="col-md-4">
-                <img src="{{ movies.poster_url }}" class="img-fluid" alt="{{ movies.movie_name }} Poster">
+        <!-- Movie Poster and Basic Info -->
+        <div class="row align-items-center">
+            <div class="col-md-4 movie-poster-container">
+                <img src="{{ movie.poster_link }}" class="img-fluid movie-poster" alt="{{ movie.movie_name }} Poster">
             </div>
             <div class="col-md-8">
-                <h1>{{ movies.movie_name }}</h1>
-                <p><strong>Description:</strong> {{ movies.movie_description }}</p>
-                <p><strong>Director:</strong> {{ movies.director }}</p>
-                <p><strong>Release Year:</strong> {{ movies.movie_date }}</p>
-                <p><strong>Runtime:</strong> {{ movies.movie_length }} minutes</p>
-                <p><strong>Genre:</strong> {{ movies.genre }}</p>
-                <p><strong>Rating:</strong> {{ movies.movie_rating }}</p>
+                <div class="movie-details">
+                    <h1>{{ movie.movie_name }}</h1>
+                    <p><strong>Tagline:</strong> {{ movie.tagline }}</p>
+                    <p><strong>Description:</strong> {{ movie.movie_description }}</p>
+                    <p><strong>Genres:</strong> {{ movie.genres }}</p>
+                    <p><strong>Languages:</strong> {{ movie.languages }}</p>
+                    <p><strong>Release Year:</strong> {{ movie.movie_date }}</p>
+                    <p><strong>Runtime:</strong> {{ movie.movie_length }} minutes</p>
+                    <p><strong>Rating:</strong> {{ movie.movie_rating }}</p>
+                    <p><strong>Studio:</strong> {{ movie.studio }}</p>
+                    <p><strong>Themes:</strong> {{ themes | join(', ') }}</p>
+                </div>
             </div>
-            </div>
-            <!-- Actors Section -->
+        </div>
+
+        <!-- Actors Section -->
         <section class="my-5">
             <h2>Actors</h2>
-            <ul class="list-group">
+            <div class="row">
                 {% for actor in actors %}
-                    <li class="list-group-item">
-                        <strong>{{ actor.actor_name }}</strong>: {{ actor.actor_role }}
-                    </li>
+                <div class="col-md-4">
+                    <div class="card actor-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ actor.actor_name }}</h5>
+                            <p class="card-text"><strong>Role:</strong> {{ actor.actor_role }}</p>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
-            </ul>
+            </div>
+        </section>
+
+        <!-- Crew Section -->
+        <section class="my-5">
+            <h2>Director</h2>
+            <div class="row">
+                {% for member in crew %}
+                <div class="col-md-4">
+                    <div class="card crew-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ member.crew_name }}</h5>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </section>
     </main>
-
-
 
     <footer class="bg-dark text-white text-center py-3">
         <div class="container">

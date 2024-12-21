@@ -1,15 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for
 from db_config import get_db_connection
+import random
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    conn = get_db_connection()
+
+    # Fetch all movies from the database, including poster links
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT 
+            movies.id, 
+            movies.movie_name,
+            MAX(posters.link) AS poster_link
+        FROM movies
+        LEFT JOIN posters ON movies.id = posters.id  -- Join on movie_id (or correct field)
+        GROUP BY movies.id, movies.movie_name  -- Group by non-aggregated columns
+    """)
+    all_movies = cursor.fetchall()
+
+    # Close the connection
+    cursor.close()
+    conn.close()
+
+    # Select 5 random movies
+    random_movies = random.sample(all_movies, 5)
+
+    # Pass the random movies to the template
+    return render_template("index.html", movies=random_movies)
+
 
 
 @app.route("/movies")
 def list_movies():
+    genre = request.args.get('genre', '')
+    language = request.args.get('language', '')
+
     # SQL query to fetch movies along with genres and posters
     query = """
         SELECT 
@@ -33,11 +61,20 @@ def list_movies():
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query)
     movies = cursor.fetchall()
+
+    # Fetch distinct genres and languages for the filter options
+    cursor.execute("SELECT DISTINCT genre FROM genres")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT DISTINCT film_language FROM languages")
+    languages = cursor.fetchall()
+    
     cursor.close()
     conn.close()
 
-    # Pass the movies data to the template
-    return render_template("movie_list.html", movies=movies)
+    # Pass the movies data and filter options to the template
+    return render_template("movie_list.html", movies=movies, genres=genres, languages=languages, selected_genre=genre, selected_language=language)
+
 
 
 
@@ -86,6 +123,7 @@ def filter_movies():
     rating_min = request.args.get('rating_min', None, type=float)
     rating_max = request.args.get('rating_max', None, type=float)
 
+    # Query to fetch the movie data
     query = """
         SELECT 
             movies.id, 
@@ -95,22 +133,18 @@ def filter_movies():
             movies.movie_rating,
             GROUP_CONCAT(DISTINCT genres.genre SEPARATOR ', ') AS genres,
             GROUP_CONCAT(DISTINCT languages.film_language SEPARATOR ', ') AS languages,
-            MAX(posters.link) AS poster_link  -- Add poster link to query
+            MAX(posters.link) AS poster_link
         FROM movies
         LEFT JOIN genres ON movies.id = genres.id
         LEFT JOIN languages ON movies.id = languages.id
-        LEFT JOIN posters ON movies.id = posters.id  -- Join with posters table
+        LEFT JOIN posters ON movies.id = posters.id
         WHERE 1=1
     """
     params = []
 
     # Apply filters dynamically
     if genre:
-        query += """
-            AND movies.id IN (
-                SELECT id FROM genres WHERE genre = %s
-            )
-        """
+        query += " AND genres.genre = %s"
         params.append(genre)
 
     if language:
@@ -141,19 +175,29 @@ def filter_movies():
         query += " AND movies.movie_rating <= %s"
         params.append(rating_max)
 
-    # Ensure movies appear only once
     query += " GROUP BY movies.id"
 
-    # Connect to the database and execute the query
+    # Fetch the movies
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query, tuple(params))
     movies = cursor.fetchall()
+
+    # Fetch distinct genres and languages for the filter options
+    cursor.execute("SELECT DISTINCT genre FROM genres")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT DISTINCT film_language FROM languages")
+    languages = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    # Pass the movies data to the template (including the poster_link)
-    return render_template('movie_list.html', movies=movies)
+    # Pass the data to the template
+    return render_template('movie_list.html', movies=movies, genres=genres, languages=languages)
+
+
+
 
 
 @app.route('/add_movie', methods=['GET', 'POST'])
@@ -308,23 +352,80 @@ def delete_movie(movie_id):
 @app.route('/movie/<int:id>', methods=['GET'])
 def movie_details(id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT * 
-        FROM movies 
+    # Fetch basic movie details
+    cursor1 = conn.cursor(dictionary=True)
+    cursor1.execute("""
+        SELECT 
+            movies.id, 
+            movies.movie_name, 
+            movies.movie_date, 
+            movies.movie_length, 
+            movies.movie_rating,
+            movies.movie_description,
+            movies.tagline,
+            GROUP_CONCAT(DISTINCT genres.genre SEPARATOR ', ') AS genres,
+            GROUP_CONCAT(DISTINCT languages.film_language SEPARATOR ', ') AS languages,
+            MAX(posters.link) AS poster_link,
+            studios.studio
+        FROM movies
+        LEFT JOIN genres ON movies.id = genres.id
+        LEFT JOIN languages ON movies.id = languages.id
+        LEFT JOIN posters ON movies.id = posters.id
+        LEFT JOIN studios ON movies.id = studios.id
+        WHERE movies.id = %s
+        GROUP BY movies.id, movies.movie_name, movies.movie_date, movies.movie_length, 
+                movies.movie_rating, studios.studio;
+    """, (id,))
+    movie = cursor1.fetchone()
+    cursor1.fetchall()  # Consume any unread results to avoid errors
+    cursor1.close()
+
+    if not movie:
+        conn.close()
+        return render_template('404.html'), 404
+
+    # Fetch actors
+    cursor2 = conn.cursor(dictionary=True)
+    cursor2.execute("""
+        SELECT actor_name, actor_role 
+        FROM actors 
         WHERE id = %s
     """, (id,))
-    
-    movies = cursor.fetchone()
-    cursor.close()
+    actors = cursor2.fetchall()
+    cursor2.fetchall()  # Consume any unread results to avoid errors
+    cursor2.close()
+
+    # Fetch crew members
+    cursor3 = conn.cursor(dictionary=True)
+    cursor3.execute("""
+        SELECT crew_name, crew_role 
+        FROM crew 
+        WHERE id = %s
+    """, (id,))
+    crew = cursor3.fetchall()
+    cursor3.fetchall()  # Consume any unread results to avoid errors
+    cursor3.close()
+
+    # Fetch themes
+    cursor4 = conn.cursor(dictionary=True)
+    cursor4.execute("""
+        SELECT theme 
+        FROM themes 
+        WHERE id = %s
+    """, (id,))
+    themes = [row['theme'] for row in cursor4.fetchall()]
+    cursor4.fetchall()  # Consume any unread results to avoid errors
+    cursor4.close()
+
     conn.close()
-    
-    if not movies:
-        return render_template('404.html'), 404  
-    
-    
-    return render_template('movie_detail.html', movies=movies)
+
+    # Pass all data to the template
+    return render_template('movie_detail.html', movie=movie, actors=actors, crew=crew, themes=themes)
+
+
+
+
 
 
 @app.route('/director/<int:director_id>', methods=['GET'])
@@ -334,8 +435,8 @@ def director_page(director_id):
 
     cursor.execute("""
         SELECT *
-        FROM directors
-        JOIN movies ON directors.director_id = movies.director_id
+        FROM crew
+        JOIN movies ON crew.director_id = movies.director_id
         WHERE directors.director_id = %s
     """, (director_id,))  
 
