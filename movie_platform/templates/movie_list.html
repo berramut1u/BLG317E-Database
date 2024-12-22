@@ -76,6 +76,26 @@
         .filter-bubble .form-select, .filter-bubble .range-slider {
             margin-bottom: 15px; /* Space between form elements */
         }
+        .movie-card {
+        background-color: #f0f8ff; /* Light background color */
+        border-radius: 20px; /* Rounded corners for bubble effect */
+        padding: 20px; /* Inner padding for space */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        margin-bottom: 20px; /* Space between movie cards */
+        }
+
+        /* Movie Poster (Rounded Corners) */
+        .movie-card img {
+            border-radius: 10px; /* Round the corners of the poster */
+            max-width: 100%; /* Make the image responsive */
+            height: auto; /* Maintain aspect ratio */
+            object-fit: cover; /* Ensure proper cropping */
+        }
+
+        /* Movie Info (Styling the movie details section inside the card) */
+        .movie-info {
+            padding-left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -256,56 +276,59 @@
     </footer>
 
 
-    <script>
-        // Function to update the range sliders
-        function updateSlider(min, max, range, minLabel, maxLabel) {
-            const minVal = parseFloat(min.value);
-            const maxVal = parseFloat(max.value);
-            if (minVal > maxVal - 0.1) {
-                min.value = maxVal - 0.1;
-            }
-            if (maxVal < minVal + 0.1) {
-                max.value = minVal + 0.1;
-            }
-            range.style.left = ((min.value - min.min) / (min.max - min.min)) * 100 + '%';
-            range.style.width = ((max.value - min.value) / (max.max - min.min)) * 100 + '%';
-            minLabel.textContent = min.value;
-            maxLabel.textContent = max.value;
-        }
-        const yearMin = document.getElementById('yearMin');
-        const yearMax = document.getElementById('yearMax');
-        const yearRange = document.getElementById('yearRange');
-        const yearMinLabel = document.getElementById('yearMinLabel');
-        const yearMaxLabel = document.getElementById('yearMaxLabel');
-        const runtimeMin = document.getElementById('runtimeMin');
-        const runtimeMax = document.getElementById('runtimeMax');
-        const runtimeRange = document.getElementById('runtimeRange');
-        const runtimeMinLabel = document.getElementById('runtimeMinLabel');
-        const runtimeMaxLabel = document.getElementById('runtimeMaxLabel');
-        const ratingMin = document.getElementById('ratingMin');
-        const ratingMax = document.getElementById('ratingMax');
-        const ratingRange = document.getElementById('ratingRange');
-        const ratingMinLabel = document.getElementById('ratingMinLabel');
-        const ratingMaxLabel = document.getElementById('ratingMaxLabel');
-        // Update sliders on input
-        yearMin.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
-        yearMax.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
-        runtimeMin.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
-        runtimeMax.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
-        ratingMin.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
-        ratingMax.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
-        // Initialize sliders
-        updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel);
-        updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel);
-        updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel);
 
-        document.getElementById('logoutBtn')?.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent the default link behavior
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout'; // Redirect to logout route
-            }
-        });
-
-    </script>
 </body>
 </html>
+
+
+<script>
+    // Function to update the range sliders
+    function updateSlider(min, max, range, minLabel, maxLabel) {
+        const minVal = parseFloat(min.value);
+        const maxVal = parseFloat(max.value);
+        if (minVal > maxVal - 0.1) {
+            min.value = maxVal - 0.1;
+        }
+        if (maxVal < minVal + 0.1) {
+            max.value = minVal + 0.1;
+        }
+        range.style.left = ((min.value - min.min) / (min.max - min.min)) * 100 + '%';
+        range.style.width = ((max.value - min.value) / (max.max - min.min)) * 100 + '%';
+        minLabel.textContent = min.value;
+        maxLabel.textContent = max.value;
+    }
+    const yearMin = document.getElementById('yearMin');
+    const yearMax = document.getElementById('yearMax');
+    const yearRange = document.getElementById('yearRange');
+    const yearMinLabel = document.getElementById('yearMinLabel');
+    const yearMaxLabel = document.getElementById('yearMaxLabel');
+    const runtimeMin = document.getElementById('runtimeMin');
+    const runtimeMax = document.getElementById('runtimeMax');
+    const runtimeRange = document.getElementById('runtimeRange');
+    const runtimeMinLabel = document.getElementById('runtimeMinLabel');
+    const runtimeMaxLabel = document.getElementById('runtimeMaxLabel');
+    const ratingMin = document.getElementById('ratingMin');
+    const ratingMax = document.getElementById('ratingMax');
+    const ratingRange = document.getElementById('ratingRange');
+    const ratingMinLabel = document.getElementById('ratingMinLabel');
+    const ratingMaxLabel = document.getElementById('ratingMaxLabel');
+    // Update sliders on input
+    yearMin.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
+    yearMax.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
+    runtimeMin.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
+    runtimeMax.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
+    ratingMin.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
+    ratingMax.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
+    // Initialize sliders
+    updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel);
+    updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel);
+    updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel);
+
+    document.getElementById('logoutBtn')?.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default link behavior
+        if (confirm('Are you sure you want to logout?')) {
+            window.location.href = '/logout'; // Redirect to logout route
+        }
+    });
+
+</script>
