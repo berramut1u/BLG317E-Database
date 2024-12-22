@@ -42,21 +42,22 @@ def login():
             return render_template('login.html', next=request.form.get('next', '/'), error=error_message)
 
 
-# Logout route
 @app.route('/logout')
 def logout():
-    next_page = request.args.get('next', request.referrer)
-    session.pop('user', None)  # Remove user from session
+    # Remove user from session
+    session.pop('user', None)
 
-
-    if next_page and ('/movie/' in next_page or '/movies' in next_page or '/' in next_page):
-        return redirect(next_page)  # Redirect to the previous page they were on
-    else:
-        return redirect('/')
+    # Redirect to login page after logout
+    return redirect(url_for('login'))
 
 
 @app.route("/")
 def index():
+
+    if 'user' not in session:
+        return redirect(url_for('login', next=request.url))
+
+
     conn = get_db_connection()
 
     # Fetch all movies from the database, including poster links
