@@ -82,10 +82,10 @@ def list_movies():
 @app.route('/search', methods=['GET'])
 def search_movies():
     query = request.args.get('query', '')
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    # SQL query to fetch movies along with genres, languages, and posters
+
     sql = """
         SELECT 
             movies.id, 
@@ -93,23 +93,34 @@ def search_movies():
             movies.movie_date, 
             movies.movie_length, 
             movies.movie_rating,
-            GROUP_CONCAT(DISTINCT genres.genre SEPARATOR ', ') AS genres,  -- Get the genres for the movie
-            GROUP_CONCAT(DISTINCT languages.film_language SEPARATOR ', ') AS languages,  -- Get the languages for the movie
-            MAX(posters.link) AS poster_link  -- Get one poster link (if available)
+            GROUP_CONCAT(DISTINCT genres.genre SEPARATOR ', ') AS genres,
+            GROUP_CONCAT(DISTINCT languages.film_language SEPARATOR ', ') AS languages,
+            MAX(posters.link) AS poster_link
         FROM movies
-        LEFT JOIN genres ON movies.id = genres.id  -- Join with genres table
-        LEFT JOIN languages ON movies.id = languages.id  -- Join with languages table (assuming 'film_language' is the column name)
-        LEFT JOIN posters ON movies.id = posters.id  -- Join with posters table
-        WHERE movies.movie_name LIKE %s  -- Filter by movie name
-        GROUP BY movies.id  -- Group by movie ID to avoid duplicate rows
+        LEFT JOIN genres ON movies.id = genres.id
+        LEFT JOIN languages ON movies.id = languages.id
+        LEFT JOIN posters ON movies.id = posters.id
+        WHERE movies.movie_name LIKE %s
+        GROUP BY movies.id
     """
     
     cursor.execute(sql, (f'%{query}%',))
     movies = cursor.fetchall()
+
+    cursor.execute("SELECT DISTINCT genre FROM genres")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT DISTINCT film_language FROM languages")
+    languages = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('movie_list.html', movies=movies)
+    # Pass the flag for no movies found
+    no_movies = len(movies) == 0
+
+    return render_template('movie_list.html', movies=movies, genres=genres, languages=languages, no_movies=no_movies)
+
 
 
 @app.route('/filter', methods=['GET'])
@@ -123,7 +134,6 @@ def filter_movies():
     rating_min = request.args.get('rating_min', None, type=float)
     rating_max = request.args.get('rating_max', None, type=float)
 
-    # Query to fetch the movie data
     query = """
         SELECT 
             movies.id, 
@@ -142,7 +152,6 @@ def filter_movies():
     """
     params = []
 
-    # Apply filters dynamically
     if genre:
         query += " AND genres.genre = %s"
         params.append(genre)
@@ -177,13 +186,11 @@ def filter_movies():
 
     query += " GROUP BY movies.id"
 
-    # Fetch the movies
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query, tuple(params))
     movies = cursor.fetchall()
 
-    # Fetch distinct genres and languages for the filter options
     cursor.execute("SELECT DISTINCT genre FROM genres")
     genres = cursor.fetchall()
 
@@ -193,8 +200,11 @@ def filter_movies():
     cursor.close()
     conn.close()
 
-    # Pass the data to the template
-    return render_template('movie_list.html', movies=movies, genres=genres, languages=languages)
+    # Pass the flag for no movies found
+    no_movies = len(movies) == 0
+
+    return render_template('movie_list.html', movies=movies, genres=genres, languages=languages, no_movies=no_movies)
+
 
 
 
@@ -425,28 +435,6 @@ def movie_details(id):
 
 
 
-
-
-
-@app.route('/director/<int:director_id>', methods=['GET'])
-def director_page(director_id):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT *
-        FROM crew
-        JOIN movies ON crew.director_id = movies.director_id
-        WHERE directors.director_id = %s
-    """, (director_id,))  
-
-    director_and_movies = cursor.fetchall()
-    conn.close()
-
-    if not director_and_movies:
-        return render_template('404.html'), 404
-
-    return render_template('director_page.html', director_and_movies=director_and_movies)
 
 
 if __name__ == '__main__':

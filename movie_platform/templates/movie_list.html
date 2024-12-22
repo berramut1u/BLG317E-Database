@@ -6,6 +6,12 @@
     <title>All Movies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
+        header {
+            background: linear-gradient(to bottom, #007bff 38%, #ffffff 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 0;
+        }
         /* Bubble styling for filter section */
         .filter-bubble {
             background: #f0f8ff; /* Light background color for the bubble */
@@ -73,7 +79,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">MovieSite</a>
+            <a class="navbar-brand" href="/">MovieBase</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -84,13 +90,17 @@
                     </li>
                 </ul>
             </div>
+            <form class="d-flex" action="/search" method="get">
+                <input class="form-control me-2" type="search" placeholder="Search movies" name="query" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
         </div>
     </nav>
 
     <header class="bg-primary text-white text-center py-4">
         <div class="container">
             <h1>All Movies</h1>
-            <p class="lead">Browse and filter movies by genre, release year, rating, and runtime.</p>
+            <p class="lead">Browse and filter movies by genre, language, release year, and runtime.</p>
         </div>
     </header>
 
@@ -99,29 +109,27 @@
         <div class="filter-bubble">
             <form class="row g-3" action="/filter" method="get">
                 <!-- Genre Filter -->
-            <div class="col-12">
-                <label for="genre" class="form-label">Genre</label>
-                <select name="genre" id="genre" class="form-select">
-                    <option value="">All</option>
-                    {% for genre_item in genres %}
-                        <option value="{{ genre_item['genre'] }}" {% if genre_item['genre'] == selected_genre %}selected{% endif %}>{{ genre_item['genre'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <div class="col-12">
+                    <label for="genre" class="form-label">Genre</label>
+                    <select name="genre" id="genre" class="form-select">
+                        <option value="">All</option>
+                        {% for genre_item in genres %}
+                            <option value="{{ genre_item['genre'] }}" {% if genre_item['genre'] == selected_genre %}selected{% endif %}>{{ genre_item['genre'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Language Filter -->
-            <div class="col-12">
-                <label for="language" class="form-label">Language</label>
-                <select name="language" id="language" class="form-select">
-                    <option value="">All</option>
-                    {% for language_item in languages %}
-                        <option value="{{ language_item['film_language'] }}" {% if language_item['film_language'] == selected_language %}selected{% endif %}>{{ language_item['film_language'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <!-- Language Filter -->
+                <div class="col-12">
+                    <label for="language" class="form-label">Language</label>
+                    <select name="language" id="language" class="form-select">
+                        <option value="">All</option>
+                        {% for language_item in languages %}
+                            <option value="{{ language_item['film_language'] }}" {% if language_item['film_language'] == selected_language %}selected{% endif %}>{{ language_item['film_language'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-
-                
                 <!-- Release Year Range Filter -->
                 <div class="col-12">
                     <label for="year_range" class="form-label">Release Year</label>
@@ -136,7 +144,7 @@
                         <span id="yearMaxLabel">2023</span>
                     </div>
                 </div>
-                
+
                 <!-- Runtime Range Filter -->
                 <div class="col-12">
                     <label for="runtime_range" class="form-label">Runtime (minutes)</label>
@@ -166,7 +174,7 @@
                         <span id="ratingMaxLabel">5.0</span>
                     </div>
                 </div>
-                
+
                 <!-- Submit Button -->
                 <div class="col-12 text-center">
                     <button type="submit" class="btn btn-primary">Filter</button>
@@ -179,93 +187,51 @@
         <div class="text-center my-4">
             <a href="{{ url_for('add_movie') }}" class="btn btn-success">Add New Movie</a>
         </div>
-        {% for movie in movies %}
-            <div class="movie-card mb-4">
-                <div class="row">
-                    <!-- Movie Poster -->
-                    <div class="col-md-4">
-                        {% if movie.poster_link %}
-                            <img src="{{ movie.poster_link }}" alt="Poster of {{ movie.movie_name }}" class="img-fluid">
-                        {% else %}
-                            <p>No poster available</p>
-                        {% endif %}
-                    </div>
-                    <!-- Movie Information -->
-                    <div class="col-md-8 movie-info">
-                        <h3>{{ movie.movie_name }}</h3>
-                        <p><strong>Release Date:</strong> {{ movie.movie_date }}</p>
-                        <p><strong>Rating:</strong> {{ movie.movie_rating }}</p>
-                        <p><strong>Genres:</strong> {{ movie.genres }}</p>
-                        <p><strong>Runtime:</strong> {{ movie.movie_length }} mins</p>
-                        <p><strong>Language:</strong> {{ movie.languages }}</p>
-                        <p><strong>Year:</strong> {{ movie.movie_date }}</p>
-                        <div class="d-flex justify-content-start mt-3">
-                            <a href="{{ url_for('movie_details', id=movie.id) }}" class="btn btn-primary me-2">View Details</a>
-                            <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning me-2">Update</a>
-                            <form action="{{ url_for('delete_movie', movie_id=movie.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this movie?');">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
+
+        {% if movies %}
+            {% for movie in movies %}
+                <div class="movie-card mb-4">
+                    <div class="row">
+                        <!-- Movie Poster -->
+                        <div class="col-md-4">
+                            {% if movie.poster_link %}
+                                <img src="{{ movie.poster_link }}" alt="Poster of {{ movie.movie_name }}" class="img-fluid">
+                            {% else %}
+                                <p>No poster available</p>
+                            {% endif %}
+                        </div>
+                        <!-- Movie Information -->
+                        <div class="col-md-8 movie-info">
+                            <h3>{{ movie.movie_name }}</h3>
+                            <p><strong>Release Date:</strong> {{ movie.movie_date }}</p>
+                            <p><strong>Rating:</strong> {{ movie.movie_rating }}</p>
+                            <p><strong>Genres:</strong> {{ movie.genres }}</p>
+                            <p><strong>Runtime:</strong> {{ movie.movie_length }} mins</p>
+                            <p><strong>Language:</strong> {{ movie.languages }}</p>
+                            <p><strong>Year:</strong> {{ movie.movie_date }}</p>
+                            <div class="d-flex justify-content-start mt-3">
+                                <a href="{{ url_for('movie_details', id=movie.id) }}" class="btn btn-primary me-2">View Details</a>
+                                <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning me-2">Update</a>
+                                <form action="{{ url_for('delete_movie', movie_id=movie.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this movie?');">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center my-5">
+                <h2>No Movies Found</h2>
+                <p>Try adjusting the filters to find movies that match your criteria.</p>
             </div>
-        {% endfor %}
+        {% endif %}
     </main>
 
     <footer class="bg-dark text-white text-center py-3">
         <div class="container">
-            <p>&copy; 2024 MovieSite. All rights reserved.</p>
+            <p>&copy; 2024 MovieBase. All rights reserved.</p>
         </div>
     </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Function to update the range sliders
-        function updateSlider(min, max, range, minLabel, maxLabel) {
-            const minVal = parseFloat(min.value);
-            const maxVal = parseFloat(max.value);
-            if (minVal > maxVal - 0.1) {
-                min.value = maxVal - 0.1;
-            }
-            if (maxVal < minVal + 0.1) {
-                max.value = minVal + 0.1;
-            }
-            range.style.left = ((min.value - min.min) / (min.max - min.min)) * 100 + '%';
-            range.style.width = ((max.value - min.value) / (max.max - min.min)) * 100 + '%';
-            minLabel.textContent = min.value;
-            maxLabel.textContent = max.value;
-        }
-
-        const yearMin = document.getElementById('yearMin');
-        const yearMax = document.getElementById('yearMax');
-        const yearRange = document.getElementById('yearRange');
-        const yearMinLabel = document.getElementById('yearMinLabel');
-        const yearMaxLabel = document.getElementById('yearMaxLabel');
-
-        const runtimeMin = document.getElementById('runtimeMin');
-        const runtimeMax = document.getElementById('runtimeMax');
-        const runtimeRange = document.getElementById('runtimeRange');
-        const runtimeMinLabel = document.getElementById('runtimeMinLabel');
-        const runtimeMaxLabel = document.getElementById('runtimeMaxLabel');
-
-        const ratingMin = document.getElementById('ratingMin');
-        const ratingMax = document.getElementById('ratingMax');
-        const ratingRange = document.getElementById('ratingRange');
-        const ratingMinLabel = document.getElementById('ratingMinLabel');
-        const ratingMaxLabel = document.getElementById('ratingMaxLabel');
-
-        // Update sliders on input
-        yearMin.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
-        yearMax.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
-        runtimeMin.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
-        runtimeMax.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
-        ratingMin.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
-        ratingMax.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
-
-        // Initialize sliders
-        updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel);
-        updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel);
-        updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel);
-    </script>
 </body>
 </html>
