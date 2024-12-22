@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Movies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/3171/3171927.png" title="film icons" type="image/png">
+
     <style>
         header {
             background: linear-gradient(to bottom, #007bff 38%, #ffffff 100%);
@@ -88,6 +90,17 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/movies">All Movies</a>
                     </li>
+                    <!-- Show Login or Logout based on session -->
+                    {% if session.get('user') %}
+                        <li class="nav-item">
+                            <!-- Logout Button -->
+                            <a href="#" class="nav-link" id="logoutBtn">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
             <form class="d-flex" action="/search" method="get">
@@ -212,9 +225,17 @@
                             <div class="d-flex justify-content-start mt-3">
                                 <a href="{{ url_for('movie_details', id=movie.id) }}" class="btn btn-primary me-2">View Details</a>
                                 <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning me-2">Update</a>
-                                <form action="{{ url_for('delete_movie', movie_id=movie.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this movie?');">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                {% if session.get('user') %}
+                                <!-- If user is logged in, show the delete button -->
+                                <form action="{{ url_for('delete_movie', movie_id=movie.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this movie?')">Delete Movie</button>
                                 </form>
+                                {% else %}
+                                <!-- If user is not logged in, redirect them to login when clicking the delete button -->
+                                <form action="{{ url_for('login') }}" method="GET">
+                                    <button type="submit" class="btn btn-danger">Delete Movie</button>
+                                </form>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -233,5 +254,58 @@
             <p>&copy; 2024 MovieBase. All rights reserved.</p>
         </div>
     </footer>
+
+
+    <script>
+        // Function to update the range sliders
+        function updateSlider(min, max, range, minLabel, maxLabel) {
+            const minVal = parseFloat(min.value);
+            const maxVal = parseFloat(max.value);
+            if (minVal > maxVal - 0.1) {
+                min.value = maxVal - 0.1;
+            }
+            if (maxVal < minVal + 0.1) {
+                max.value = minVal + 0.1;
+            }
+            range.style.left = ((min.value - min.min) / (min.max - min.min)) * 100 + '%';
+            range.style.width = ((max.value - min.value) / (max.max - min.min)) * 100 + '%';
+            minLabel.textContent = min.value;
+            maxLabel.textContent = max.value;
+        }
+        const yearMin = document.getElementById('yearMin');
+        const yearMax = document.getElementById('yearMax');
+        const yearRange = document.getElementById('yearRange');
+        const yearMinLabel = document.getElementById('yearMinLabel');
+        const yearMaxLabel = document.getElementById('yearMaxLabel');
+        const runtimeMin = document.getElementById('runtimeMin');
+        const runtimeMax = document.getElementById('runtimeMax');
+        const runtimeRange = document.getElementById('runtimeRange');
+        const runtimeMinLabel = document.getElementById('runtimeMinLabel');
+        const runtimeMaxLabel = document.getElementById('runtimeMaxLabel');
+        const ratingMin = document.getElementById('ratingMin');
+        const ratingMax = document.getElementById('ratingMax');
+        const ratingRange = document.getElementById('ratingRange');
+        const ratingMinLabel = document.getElementById('ratingMinLabel');
+        const ratingMaxLabel = document.getElementById('ratingMaxLabel');
+        // Update sliders on input
+        yearMin.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
+        yearMax.addEventListener('input', () => updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel));
+        runtimeMin.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
+        runtimeMax.addEventListener('input', () => updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel));
+        ratingMin.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
+        ratingMax.addEventListener('input', () => updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel));
+        // Initialize sliders
+        updateSlider(yearMin, yearMax, yearRange, yearMinLabel, yearMaxLabel);
+        updateSlider(runtimeMin, runtimeMax, runtimeRange, runtimeMinLabel, runtimeMaxLabel);
+        updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel);
+
+        document.getElementById('logoutBtn')?.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default link behavior
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout'; // Redirect to logout route
+            }
+        });
+
+    </script>
 </body>
 </html>

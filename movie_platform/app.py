@@ -1,8 +1,59 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from db_config import get_db_connection
 import random
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
+
+# Login route (GET to render the login form)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        # Capture the 'next' parameter (where the user was trying to go)
+        next_page = request.args.get('next', '/')  # Default to '/' if no next parameter exists
+        return render_template('login.html', next=next_page, error=None)
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query the database to check for matching credentials
+        cursor.execute('SELECT * FROM login WHERE username = %s AND pass = %s', (username, password))
+        user = cursor.fetchone()
+
+        if user:
+            # Successfully logged in, store user in session
+            session['user'] = user['username']
+            cursor.close()
+            conn.close()
+
+            # Get the next URL from the form (which contains the original page the user wanted to visit)
+            next_url = request.form.get('next', '/movies')  # Default to '/movies' if no next URL
+            return redirect(next_url)
+        else:
+            cursor.close()
+            conn.close()
+
+            # If authentication fails, show an error message
+            error_message = "Invalid username or password. Please try again."
+            return render_template('login.html', next=request.form.get('next', '/'), error=error_message)
+
+
+# Logout route
+@app.route('/logout')
+def logout():
+    next_page = request.args.get('next', request.referrer)
+    session.pop('user', None)  # Remove user from session
+
+
+    if next_page and ('/movie/' in next_page or '/movies' in next_page or '/' in next_page):
+        return redirect(next_page)  # Redirect to the previous page they were on
+    else:
+        return redirect('/')
+
 
 @app.route("/")
 def index():
@@ -206,12 +257,10 @@ def filter_movies():
     return render_template('movie_list.html', movies=movies, genres=genres, languages=languages, no_movies=no_movies)
 
 
-
-
-
-
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
+    if 'user' not in session:
+        return redirect(url_for('login', next=request.url))   # Redirect to login if not logged in
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -284,6 +333,8 @@ def add_movie():
 
 @app.route('/update_movie/<int:movie_id>', methods=['GET', 'POST'])
 def update_movie(movie_id):
+    if 'user' not in session:
+        return redirect(url_for('login', next=request.url))   # Redirect to login if not logged in
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -336,6 +387,8 @@ def update_movie(movie_id):
 
 @app.route('/delete_movie/<int:movie_id>', methods=['POST'])
 def delete_movie(movie_id):
+    if 'user' not in session:
+        return redirect(url_for('login', next=url_for('movies')))     
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -348,7 +401,6 @@ def delete_movie(movie_id):
     cursor.execute("DELETE FROM themes WHERE id = %s", (movie_id,))
     cursor.execute("DELETE FROM studios WHERE id = %s", (movie_id,))
     cursor.execute("DELETE FROM posters WHERE id = %s", (movie_id,))
-
     cursor.execute("DELETE FROM movies WHERE id = %s", (movie_id,))
 
     conn.commit()
