@@ -44,19 +44,16 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # Remove user from session
-    session.pop('user', None)
-
-    # Redirect to login page after logout
-    return redirect(url_for('login'))
+    next_page = request.args.get('next', request.referrer)
+    session.pop('user', None)  # Remove user from session
+    if next_page and ('/movie/' in next_page or '/movies' in next_page or '/' in next_page):
+        return redirect(next_page)  # Redirect to the previous page they were on
+    else:
+        return redirect('/')
 
 
 @app.route("/")
 def index():
-
-    if 'user' not in session:
-        return redirect(url_for('login', next=request.url))
-
 
     conn = get_db_connection()
 
