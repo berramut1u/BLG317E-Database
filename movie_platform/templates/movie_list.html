@@ -20,10 +20,8 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/movies">All Movies</a>
                     </li>
-                    <!-- Show Login or Logout based on session -->
                     {% if session.get('user') %}
                         <li class="nav-item">
-                            <!-- Logout Button -->
                             <a href="#" class="nav-link" id="logoutBtn">Logout</a>
                         </li>
                     {% else %}
@@ -47,7 +45,6 @@
         </div>
     </header>
 
-    <!-- Filter Bubble Section -->
     <section class="container">
         <div class="filter-bubble">
             <form class="row g-3" action="/filter" method="get">
@@ -235,9 +232,9 @@
     updateSlider(ratingMin, ratingMax, ratingRange, ratingMinLabel, ratingMaxLabel);
 
     document.getElementById('logoutBtn')?.addEventListener('click', function(event) {
-        event.preventDefault(); // Prevent the default link behavior
+        event.preventDefault(); 
         if (confirm('Are you sure you want to logout?')) {
-            window.location.href = '/logout'; // Redirect to logout route
+            window.location.href = '/logout'; 
         }
     });
 
