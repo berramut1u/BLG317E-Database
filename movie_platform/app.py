@@ -263,7 +263,6 @@ def filter_movies():
     return render_template('movie_list.html', movies=movies, genres=genres, languages=languages, no_movies=no_movies)
 
 
-
 # Add route
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
